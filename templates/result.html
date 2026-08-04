@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Result</title>
+
+    <style>
+
+        body{
+            background:#050505;
+            color:white;
+            font-family:Segoe UI;
+            padding:60px;
+        }
+
+        .main{
+            display:flex;
+            gap:50px;
+        }
+
+        .left{
+            width:40%;
+        }
+
+        .left img{
+            width:100%;
+            border:2px solid #7dff00;
+        }
+
+        .again{
+            display:block;
+            width:100%;
+            margin-top:25px;
+            background:#7dff00;
+            color:black;
+            padding:18px;
+            text-align:center;
+            text-decoration:none;
+            font-weight:700;
+        }
+
+        .right{
+            width:60%;
+        }
+
+        h1{
+            font-size:70px;
+            margin-bottom:20px;
+        }
+
+        .green{
+            color:#9dff00;
+        }
+
+        .confidence{
+            font-size:30px;
+            margin-bottom:30px;
+        }
+
+        .bar{
+            width:100%;
+            height:20px;
+            background:#222;
+            margin-bottom:50px;
+        }
+
+        .fill{
+            height:100%;
+            width:{{confidence}}%;
+            background:#7dff00;
+        }
+
+        .prediction{
+            font-size:55px;
+            color:#9dff00;
+            margin-bottom:30px;
+            font-weight:800;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="main">
+
+        <div class="left">
+
+            <img src="{{ url_for('static', filename='uploads/' + filename) }}">
+
+            <a href="/upload" class="again">
+                Analyze Again
+            </a>
+
+        </div>
+
+        <div class="right">
+
+            <h1>
+                AI Analysis <span class="green">Dashboard</span>
+            </h1>
+
+            <div class="prediction">
+                {{ prediction }}
+            </div>
+
+            <div class="confidence">
+                Confidence Score : {{ confidence }}%
+            </div>
+
+            <div class="bar">
+                <div class="fill"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

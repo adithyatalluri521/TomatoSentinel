@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Upload Leaf</title>
+
+    <style>
+
+        body{
+            background:#050505;
+            color:white;
+            font-family:Segoe UI;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+        }
+
+        .box{
+            width:650px;
+            background:#0b0b0b;
+            border:1px solid rgba(157,255,0,0.2);
+            padding:50px;
+            text-align:center;
+        }
+
+        h1{
+            font-size:60px;
+            margin-bottom:30px;
+        }
+
+        span{
+            color:#9dff00;
+        }
+
+        .upload{
+            border:2px dashed #444;
+            padding:60px;
+            margin-top:30px;
+        }
+
+        input{
+            margin-top:25px;
+            color:white;
+        }
+
+        button{
+            margin-top:40px;
+            width:100%;
+            padding:18px;
+            background:#8cff00;
+            border:none;
+            font-size:20px;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="box">
+
+        <h1>
+            Upload a <span>Leaf Image</span>
+        </h1>
+
+        <form action="/predict" method="POST" enctype="multipart/form-data">
+
+            <div class="upload">
+
+                <h2>Drop your leaf image</h2>
+
+                <input type="file" name="file" required>
+
+            </div>
+
+            <button type="submit">
+                Analyze Disease
+            </button>
+
+        </form>
+
+    </div>
+
+</body>
+</html>
