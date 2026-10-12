@@ -1,38 +1,29 @@
 
+import os
+import uuid
+import logging
+import numpy as np
+
 from flask import Flask, render_template, request
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-import numpy as np
-import os
-import tempfile
-import base64
-from uuid import uuid4
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "model.h5")
-UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), "tomatosentinel_uploads")
 
+UPLOAD_FOLDER = (
+    "/tmp/tomato_uploads"
+    if os.environ.get("VERCEL")
+    else os.path.join(BASE_DIR, "static", "uploads")
+)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-classes = [
-    "Bacterial Spot",
-    "Early Blight",
-    "Healthy",
-    "Late Blight",
-    "Leaf Mold",
-    "Septoria Leaf Spot"
-]
+classes = ["Early Blight", "Late Blight", "Healthy"]
 
-model = None
-
-
-def get_model():
-    global model
-    if model is None:
-        model = load_model(MODEL_PATH, compile=False)
-    return model
+model = load_model(MODEL_PATH, compile=False)
 
 
 @app.route("/")
@@ -47,60 +38,59 @@ def upload():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    file = request.files.get("file")
-
-    if file is None or not file.filename:
-        return "Please select a leaf image.", 400
-
-    extension = os.path.splitext(file.filename)[1].lower()
-    allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
-
-    if extension not in allowed_extensions:
-        return "Upload a JPG, JPEG, PNG, or WEBP image.", 400
-
-    filepath = os.path.join(UPLOAD_FOLDER, f"{uuid4().hex}{extension}")
-
     try:
+        if "file" not in request.files:
+            return "Please select a tomato leaf image.", 400
+
+        file = request.files["file"]
+
+        if not file.filename:
+            return "Please select a tomato leaf image.", 400
+
+        filename = f"{uuid.uuid4().hex}.jpg"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
-
-        with open(filepath, "rb") as uploaded_image:
-            image_bytes = uploaded_image.read()
-
-        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-
-        mime_type = {
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".png": "image/png",
-            ".webp": "image/webp"
-        }[extension]
 
         img = image.load_img(filepath, target_size=(128, 128))
         img_array = image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0)
         img_array = img_array / 255.0
 
-        prediction = get_model().predict(img_array, verbose=0)
-        predicted_class = classes[int(np.argmax(prediction))]
-        confidence = round(float(np.max(prediction)) * 100, 2)
+        prediction = model.predict(img_array, verbose=0)
 
-        image_data = f"data:{mime_type};base64,{image_base64}"
+        if prediction.shape[-1] != len(classes):
+            app.logger.error(
+                "Model output count: %s; configured classes: %s",
+                prediction.shape[-1],
+                len(classes),
+            )
+            return "Model and class configuration do not match.", 500
+
+        predicted_index = int(np.argmax(prediction[0]))
+        predicted_class = classes[predicted_index]
+        confidence = round(float(np.max(prediction[0])) * 100, 2)
+
+        image_data = None
+
+        if os.environ.get("VERCEL"):
+            import base64
+
+            with open(filepath, "rb") as img_file:
+                encoded = base64.b64encode(img_file.read()).decode("utf-8")
+
+            image_data = f"data:image/jpeg;base64,{encoded}"
 
         return render_template(
             "result.html",
             prediction=predicted_class,
             confidence=confidence,
-            filename="",
-            image_data=image_data
+            filename=filename,
+            image_data=image_data,
         )
 
     except Exception:
         app.logger.exception("Disease prediction failed")
-        return "Prediction failed. Please try another image.", 500
-
-    finally:
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        return "Prediction failed. Please check the application logs.", 500
 
 
 if __name__ == "__main__":

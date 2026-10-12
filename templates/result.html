@@ -4,139 +4,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TomatoSentinel - Analysis Result</title>
+    <title>Tomato Sentinel | Analysis Result</title>
 
     <style>
-        body {
-            background: #050505;
-            color: white;
-            font-family: "Segoe UI", Arial, sans-serif;
-            padding: 60px;
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #050505;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 40px 5%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+
+        .brand {
+            color: #80ff00;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #b8b8b8;
+            margin-top: 10px;
         }
 
         .main {
             display: flex;
-            gap: 50px;
-            align-items: flex-start;
+            align-items: center;
+            justify-content: center;
+            gap: 4%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .left {
             width: 40%;
+            min-width: 0;
         }
 
         .left img {
-            width: 100%;
-            border: 2px solid #7dff00;
-            box-sizing: border-box;
-            border-radius: 8px;
-        }
-
-        .again {
             display: block;
             width: 100%;
-            margin-top: 25px;
-            background: #7dff00;
-            color: black;
-            padding: 18px 0;
+            max-height: 520px;
+            object-fit: contain;
+            border: 1px solid #80ff00;
+            border-radius: 12px;
+            background: #151515;
+        }
+
+        .preview-message {
+            color: #c9c9c9;
             text-align: center;
-            text-decoration: none;
-            font-weight: 700;
-            border-radius: 5px;
-            box-sizing: border-box;
+            padding: 40px 10px;
         }
 
         .right {
-            width: 60%;
+            width: 56%;
+            min-width: 0;
+        }
+
+        .eyebrow {
+            color: #80ff00;
+            font-size: 12px;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
         }
 
         h1 {
-            font-size: 60px;
-            margin-top: 0;
-            margin-bottom: 20px;
+            font-size: clamp(32px, 4vw, 66px);
+            line-height: 1.1;
+            margin-bottom: 30px;
         }
 
-        .green {
-            color: #9dff00;
+        h1 span {
+            color: #80ff00;
+        }
+
+        .disease {
+            color: #80ff00;
+            font-size: clamp(28px, 3vw, 48px);
+            margin-bottom: 22px;
+            overflow-wrap: anywhere;
         }
 
         .confidence {
-            font-size: 26px;
-            margin-bottom: 30px;
+            color: #eeeeee;
+            font-size: clamp(18px, 2vw, 28px);
+            margin-bottom: 25px;
         }
 
-        .bar {
+        .progress-track {
             width: 100%;
-            height: 20px;
-            background: #222;
-            margin-bottom: 50px;
-            border-radius: 10px;
+            height: 14px;
+            background: #252525;
+            border-radius: 20px;
             overflow: hidden;
-        }
-
-        .fill {
-            height: 100%;
-            width: {{ confidence }}%;
-            background: #7dff00;
-        }
-
-        .prediction {
-            font-size: 48px;
-            color: #9dff00;
             margin-bottom: 30px;
-            font-weight: 800;
         }
 
-        @media (max-width: 768px) {
+        .progress-fill {
+            height: 100%;
+            background: #80ff00;
+            border-radius: 20px;
+        }
+
+        .description {
+            color: #bdbdbd;
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            background: #80ff00;
+            color: #050505;
+            font-weight: bold;
+            font-size: 17px;
+            padding: 19px 15px;
+            border-radius: 9px;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover {
+            background: #a0ff40;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777777;
+            font-size: 13px;
+            margin-top: 55px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 800px) {
             body {
-                padding: 24px;
+                padding: 25px 6%;
             }
 
             .main {
                 flex-direction: column;
-                gap: 30px;
+                gap: 35px;
             }
 
-            .left, .right {
+            .left,
+            .right {
                 width: 100%;
             }
 
-            h1 {
-                font-size: 38px;
+            .left img {
+                max-height: 400px;
             }
 
-            .prediction {
-                font-size: 34px;
+            h1 {
+                margin-bottom: 22px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="main">
-        <div class="left">
-            {% if image_data %}
-                <img src="{{ image_data }}" alt="Uploaded tomato leaf">
+    <header class="header">
+        <div class="brand">TOMATO SENTINEL</div>
+        <p>AI-Powered Plant Disease Detection</p>
+    </header>
+
+    <main class="main">
+        <section class="left">
+            {% if filename %}
+                <img
+                    src="{{ url_for('static', filename='uploads/' + filename) }}"
+                    alt="Uploaded tomato leaf"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                >
+                <div class="preview-message" style="display: none;">
+                    Uploaded image preview is unavailable.
+                </div>
             {% else %}
-                <p>Uploaded image preview is unavailable.</p>
+                <div class="preview-message">
+                    Uploaded image preview is unavailable.
+                </div>
             {% endif %}
 
-            <a href="/upload" class="again">Analyze Again</a>
-        </div>
+            <a href="{{ url_for('upload') }}" class="button" style="margin-top: 30px;">
+                Analyze Again
+            </a>
+        </section>
 
-        <div class="right">
-            <h1>AI Analysis <span class="green">Dashboard</span></h1>
+        <section class="right">
+            <p class="eyebrow">AI-powered plant pathology</p>
 
-            <div class="prediction">{{ prediction }}</div>
+            <h1>
+                AI Analysis<br>
+                <span>Dashboard</span>
+            </h1>
 
-            <div class="confidence">
+            <h2 class="disease">{{ prediction | replace('_', ' ') | title }}</h2>
+
+            <p class="confidence">
                 Confidence Score: {{ confidence }}%
+            </p>
+
+            <div
+                class="progress-track"
+                role="progressbar"
+                aria-label="Prediction confidence"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ confidence }}"
+            >
+                <div
+                    class="progress-fill"
+                    data-confidence="{{ confidence }}"
+                ></div>
             </div>
 
-            <div class="bar">
-                <div class="fill"></div>
-            </div>
-        </div>
-    </div>
+            <p class="description">
+                AI-powered tomato leaf analysis. Predictions are model
+                estimates and should be confirmed when making
+                crop-treatment decisions.
+            </p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        Tomato Sentinel — AI Powered Disease Watch<br>
+        For educational and research purposes.
+    </footer>
+
+    <script>
+        document.querySelectorAll(".progress-fill").forEach(function (bar) {
+            var confidence = Number(bar.dataset.confidence);
+            confidence = Math.max(0, Math.min(100, confidence));
+            bar.style.width = confidence + "%";
+        });
+    </script>
 </body>
 </html>
